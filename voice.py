@@ -62,17 +62,24 @@ rag_chain = rag_inputs | prompt | llm | StrOutputParser()
 # === Text-to-Speech ===
 def speak_text(text, lang_code):
     try:
+        import pygame
+        import time
         # Use an absolute path as playsound on Windows often fails with relative paths
         filename = os.path.abspath("tts_output.mp3")
         tts = gTTS(text=text, lang=lang_code)
         tts.save(filename)
         
         try:
-            from playsound import playsound
-            playsound(filename)
+            pygame.mixer.init()
+            pygame.mixer.music.load(filename)
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy():
+                pygame.time.Clock().tick(10)
+            pygame.mixer.music.unload()
+            pygame.mixer.quit()
         except Exception as e:
-            print(f"playsound failed: {e}. Trying fallback...")
-            # Fallback to default media player if playsound fails
+            print(f"pygame playback failed: {e}. Trying fallback...")
+            # Fallback to default media player if pygame fails
             import platform
             if platform.system() == "Windows":
                 os.system(f'start "" "{filename}"')
@@ -80,7 +87,9 @@ def speak_text(text, lang_code):
                 os.system(f'afplay "{filename}" &')
             
         try:
-            os.remove(filename)  # Optional cleanup
+            time.sleep(1) # Give it a moment to unlock
+            if os.path.exists(filename):
+                os.remove(filename)  # Optional cleanup
         except OSError:
             pass  # Ignore if the file is locked by the media player
     except Exception as e:
@@ -96,7 +105,7 @@ LANG_TO_GTT_LANG = {
 # Tamil uses English internally -> Google Translate for high quality output
 LANGUAGE_INSTRUCTIONS = {
     "1": "English language",  # will be Google-translated to Tamil after generation
-    "2": "Casual Thanglish (Tamil language written in the English alphabet. Do NOT use Tamil script. Use GenZ conversational words like 'macha', 'bro', 'romba').",
+    "2": "CRITICAL: Respond ENTIRELY in Thanglish (Tamil language transliterated in the English alphabet). DO NOT use English sentences. Mix Tamil words written in English letters with GenZ slangs (e.g., 'macha', 'bro', 'da', 'vibe', 'romba'). Example: 'Kavala padatha macha, ellam seri aagidum.' DO NOT USE TAMIL SCRIPT.",
     "3": "Hindi language (हिन्दी)",
     "4": "English language"
 }

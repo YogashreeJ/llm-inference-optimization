@@ -79,7 +79,7 @@ LANGUAGE_INSTRUCTIONS = {
     "tamil": "English language",  # will be Google-translated to Tamil after generation
     "hindi": "Hindi language (हिन्दी)",
     "english": "English language",
-    "thanglish": "Casual Thanglish (Tamil language written in the English alphabet. Do NOT use Tamil script. Use GenZ conversational words like 'macha', 'bro', 'romba')."
+    "thanglish": "CRITICAL: Respond ENTIRELY in Thanglish (Tamil language transliterated in the English alphabet). DO NOT use English sentences. Mix Tamil words written in English letters with GenZ slangs (e.g., 'macha', 'bro', 'da', 'vibe', 'romba'). Example: 'Kavala padatha macha, ellam seri aagidum.' DO NOT USE TAMIL SCRIPT."
 }
 
 
