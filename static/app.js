@@ -31,6 +31,10 @@ function goToChat() {
   setTimeout(() => document.getElementById("chat-input").focus(), 600);
 }
 
+function goBackToLanguage() {
+  switchScreen("screen-chat", "screen-language");
+}
+
 // ─── Language Selection ─────────────────────────────
 function selectLanguage(card) {
   document.querySelectorAll(".lang-card").forEach((c) => c.classList.remove("selected"));
@@ -164,6 +168,12 @@ async function sendMessage() {
       bubbleDiv.textContent = "I'm sorry, I couldn't generate a response. Please try again.";
     } else {
       // Play audio
+      const audioIndicator = document.createElement("div");
+      audioIndicator.className = "message-time";
+      audioIndicator.style.marginTop = "4px";
+      audioIndicator.textContent = "🔊 Generating audio...";
+      msgDiv.appendChild(audioIndicator);
+
       try {
         const audioRes = await fetch("/api/tts", {
           method: "POST",
@@ -174,10 +184,29 @@ async function sendMessage() {
           const blob = await audioRes.blob();
           const audioUrl = URL.createObjectURL(blob);
           const audio = new Audio(audioUrl);
-          audio.play();
+          
+          audioIndicator.textContent = "🔊 Audio ready";
+          
+          // Append an audio element with controls just in case autoplay fails
+          const audioEl = document.createElement("audio");
+          audioEl.controls = true;
+          audioEl.src = audioUrl;
+          audioEl.style.height = "30px";
+          audioEl.style.marginTop = "8px";
+          audioEl.style.width = "100%";
+          msgDiv.appendChild(audioEl);
+          
+          try {
+            await audio.play();
+          } catch(err) {
+            console.warn("Autoplay blocked. User can use the controls.", err);
+          }
+        } else {
+          audioIndicator.textContent = "🔊 Audio failed";
         }
       } catch (e) {
         console.error("TTS failed", e);
+        audioIndicator.textContent = "🔊 Audio failed";
       }
     }
   } catch (err) {

@@ -197,15 +197,20 @@ async def chat(req: ChatRequest):
                 })
                 # Then rewrite it
                 genz_rewriter_prompt = ChatPromptTemplate.from_template("""
-You are a helpful Gen-Z friend. Rewrite the following explanation of a Thirukkural so it sounds like a casual conversation with a friend in 'Thanglish' (Tamil words written in English letters). 
-Use GenZ slang like 'macha', 'bro', 'da', 'vibe', 'verithanam', 'romba'. 
-Make it relatable, empathetic, and conversational.
-DO NOT use Tamil script. Keep the original Thirukkural in Tamil script if it's there, but the explanation MUST be in Thanglish.
+You are a highly empathetic Gen-Z friend. Your job is to comfort the user using Thanglish (Tamil words written in English letters). 
+You will be given a Thirukkural and its explanation. 
+You must output a highly conversational, comforting response in Thanglish, using Gen-Z slang (macha, bro, da, vibe, chill, feel pannatha, etc).
+
+Rules:
+1. Speak ENTIRELY in Thanglish. NO full English sentences. NO Tamil script (except for the Kural itself).
+2. Start by comforting the user like a friend (e.g. "Macha, don't worry da...", "Bro, feel pannatha...").
+3. Include the Thirukkural.
+4. Explain the meaning in casual Thanglish like you're talking to a friend over coffee.
 
 Original Text:
 {text}
 
-Rewritten Gen-Z Thanglish Text:
+Your Gen-Z Thanglish Response:
 """)
                 rewriter = genz_rewriter_prompt | llm | StrOutputParser()
                 async for chunk in rewriter.astream({"text": rag_output}):
