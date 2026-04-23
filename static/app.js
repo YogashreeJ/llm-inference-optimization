@@ -162,6 +162,23 @@ async function sendMessage() {
 
     if (!fullText.trim()) {
       bubbleDiv.textContent = "I'm sorry, I couldn't generate a response. Please try again.";
+    } else {
+      // Play audio
+      try {
+        const audioRes = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ language: selectedLanguage, message: fullText })
+        });
+        if (audioRes.ok) {
+          const blob = await audioRes.blob();
+          const audioUrl = URL.createObjectURL(blob);
+          const audio = new Audio(audioUrl);
+          audio.play();
+        }
+      } catch (e) {
+        console.error("TTS failed", e);
+      }
     }
   } catch (err) {
     removeTypingIndicator();

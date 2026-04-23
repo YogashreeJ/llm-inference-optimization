@@ -148,15 +148,34 @@ if __name__ == "__main__":
     print("\n💬 I understand what you are feeling right now:\n")
 
     full_response = ""
-    for chunk in rag_chain.stream({"question": query, "language_instruction": instruction}):
-        if lang != "1":  # Stream to console for non-Tamil
-            print(chunk, end="", flush=True)
-        full_response += chunk
+    if lang == "2":  # Thanglish
+        print("🔄 Generating GenZ Thanglish response...")
+        rag_output = rag_chain.invoke({"question": query, "language_instruction": "English language"})
+        genz_rewriter_prompt = ChatPromptTemplate.from_template("""
+You are a helpful Gen-Z friend. Rewrite the following explanation of a Thirukkural so it sounds like a casual conversation with a friend in 'Thanglish' (Tamil words written in English letters). 
+Use GenZ slang like 'macha', 'bro', 'da', 'vibe', 'verithanam', 'romba'. 
+Make it relatable, empathetic, and conversational.
+DO NOT use Tamil script. Keep the original Thirukkural in Tamil script if it's there, but the explanation MUST be in Thanglish.
 
-    if lang == "1":  # Tamil: translate then print
-        print("🔄 Translating to Tamil...")
-        full_response = translate_to_tamil(full_response)
-        print(full_response)
+Original Text:
+{text}
+
+Rewritten Gen-Z Thanglish Text:
+""")
+        rewriter = genz_rewriter_prompt | llm | StrOutputParser()
+        for chunk in rewriter.stream({"text": rag_output}):
+            print(chunk, end="", flush=True)
+            full_response += chunk
+    else:
+        for chunk in rag_chain.stream({"question": query, "language_instruction": instruction}):
+            if lang != "1":  # Stream to console for non-Tamil
+                print(chunk, end="", flush=True)
+            full_response += chunk
+
+        if lang == "1":  # Tamil: translate then print
+            print("🔄 Translating to Tamil...")
+            full_response = translate_to_tamil(full_response)
+            print(full_response)
 
     print("\n")
 

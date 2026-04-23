@@ -150,11 +150,26 @@ async def daily_thought():
     return get_daily_thought()
 
 
+@app.post("/api/tts")
+async def tts(req: ChatRequest):
+    lang_code = "ta" if req.language.lower() == "tamil" else "en"
+    if req.language.lower() == "hindi":
+        lang_code = "hi"
+    
+    from gtts import gTTS
+    import io
+    tts_obj = gTTS(text=req.message, lang=lang_code)
+    mp3_fp = io.BytesIO()
+    tts_obj.write_to_fp(mp3_fp)
+    mp3_fp.seek(0)
+    return StreamingResponse(mp3_fp, media_type="audio/mpeg")
+
 @app.post("/api/chat")
 async def chat(req: ChatRequest):
     lang_key = req.language.lower().strip()
     instruction = LANGUAGE_INSTRUCTIONS.get(lang_key, LANGUAGE_INSTRUCTIONS["english"])
     is_tamil = lang_key == "tamil"
+    is_thanglish = lang_key == "thanglish"
 
     if is_tamil:
         # For Tamil: collect full English response, then translate via Google Translate
@@ -172,6 +187,32 @@ async def chat(req: ChatRequest):
             except Exception as e:
                 yield f"\n\n⚠️ Error: {str(e)}"
         return StreamingResponse(generate_tamil(), media_type="text/plain")
+    elif is_thanglish:
+        async def generate_thanglish():
+            try:
+                # First get the english RAG output
+                rag_output = rag_chain.invoke({
+                    "question": req.message,
+                    "language_instruction": "English language"
+                })
+                # Then rewrite it
+                genz_rewriter_prompt = ChatPromptTemplate.from_template("""
+You are a helpful Gen-Z friend. Rewrite the following explanation of a Thirukkural so it sounds like a casual conversation with a friend in 'Thanglish' (Tamil words written in English letters). 
+Use GenZ slang like 'macha', 'bro', 'da', 'vibe', 'verithanam', 'romba'. 
+Make it relatable, empathetic, and conversational.
+DO NOT use Tamil script. Keep the original Thirukkural in Tamil script if it's there, but the explanation MUST be in Thanglish.
+
+Original Text:
+{text}
+
+Rewritten Gen-Z Thanglish Text:
+""")
+                rewriter = genz_rewriter_prompt | llm | StrOutputParser()
+                async for chunk in rewriter.astream({"text": rag_output}):
+                    yield chunk
+            except Exception as e:
+                yield f"\n\n⚠️ Error: {str(e)}"
+        return StreamingResponse(generate_thanglish(), media_type="text/plain")
     else:
         # For other languages: stream tokens directly
         async def generate():
