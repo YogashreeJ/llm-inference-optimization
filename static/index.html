@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A calming emotional support chatbot powered by Thirukkural wisdom. Get guidance in Tamil, English, Hindi, or Thanglish." />
+  <title>KuralMind — Emotional Support Chatbot</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪷</text></svg>" />
+</head>
+<body>
+
+  <!-- Ambient Background -->
+  <div class="ambient-bg">
+    <div class="ambient-orb"></div>
+    <div class="ambient-orb"></div>
+    <div class="ambient-orb"></div>
+  </div>
+
+  <!-- ═══ Screen 1: Welcome ═══ -->
+  <section id="screen-welcome" class="screen active">
+    <div class="welcome-container">
+
+      <div class="lotus-icon">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="lotusGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#7fad85" />
+              <stop offset="100%" style="stop-color:#5aada5" />
+            </linearGradient>
+          </defs>
+          <path d="M50 15 C50 15 30 35 30 55 C30 65 38 75 50 78 C62 75 70 65 70 55 C70 35 50 15 50 15Z" fill="url(#lotusGrad)" opacity="0.3"/>
+          <path d="M50 20 C50 20 20 40 18 60 C17 68 25 74 35 72 C42 70 48 62 50 55 C52 62 58 70 65 72 C75 74 83 68 82 60 C80 40 50 20 50 20Z" fill="url(#lotusGrad)" opacity="0.5"/>
+          <path d="M50 30 C50 30 35 45 35 58 C35 65 42 70 50 70 C58 70 65 65 65 58 C65 45 50 30 50 30Z" fill="url(#lotusGrad)" opacity="0.8"/>
+          <circle cx="50" cy="55" r="6" fill="url(#lotusGrad)"/>
+        </svg>
+      </div>
+
+      <h1 class="welcome-title">KuralMind</h1>
+      <p class="welcome-subtitle">Your gentle companion for emotional wellbeing</p>
+
+      <div class="thought-card" id="thought-card">
+        <div class="thought-label">✦ Today's Wisdom ✦</div>
+        <p class="thought-kural thought-loading" id="thought-kural">Loading today's wisdom...</p>
+        <p class="thought-meaning" id="thought-meaning" style="display:none;"></p>
+        <p class="thought-meta" id="thought-meta" style="display:none;"></p>
+      </div>
+
+      <button class="btn-begin" id="btn-begin" onclick="goToLanguage()">
+        I'm ready to talk
+        <span class="arrow">→</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══ Screen 2: Language Selection ═══ -->
+  <section id="screen-language" class="screen">
+    <div class="lang-container">
+      <h1 class="lang-title">Choose your language</h1>
+      <p class="lang-subtitle">We'll respond in the language you're most comfortable with</p>
+
+      <div class="lang-grid">
+        <div class="lang-card" data-lang="tamil" onclick="selectLanguage(this)">
+          <span class="lang-emoji">🇮🇳</span>
+          <div class="lang-name">தமிழ் (Tamil)</div>
+          <div class="lang-sample">உங்கள் உணர்வுகளைப் பகிரவும்</div>
+        </div>
+
+        <div class="lang-card" data-lang="english" onclick="selectLanguage(this)">
+          <span class="lang-emoji">🌍</span>
+          <div class="lang-name">English</div>
+          <div class="lang-sample">Share what's on your mind</div>
+        </div>
+
+        <div class="lang-card" data-lang="hindi" onclick="selectLanguage(this)">
+          <span class="lang-emoji">🙏</span>
+          <div class="lang-name">हिन्दी (Hindi)</div>
+          <div class="lang-sample">अपनी भावनाओं को साझा करें</div>
+        </div>
+
+        <div class="lang-card" data-lang="thanglish" onclick="selectLanguage(this)">
+          <span class="lang-emoji">💬</span>
+          <div class="lang-name">Thanglish</div>
+          <div class="lang-sample">Unga feelings sollunga bro</div>
+        </div>
+      </div>
+
+      <button class="btn-continue" id="btn-continue" onclick="goToChat()">
+        Continue
+        <span class="arrow">→</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══ Screen 3: Chat ═══ -->
+  <section id="screen-chat" class="screen">
+    <div class="chat-container">
+
+      <div class="chat-header">
+        <div class="chat-header-icon">🪷</div>
+        <div class="chat-header-info">
+          <h2>KuralMind</h2>
+          <span>Powered by Thirukkural wisdom</span>
+        </div>
+        <div class="chat-lang-badge" id="chat-lang-badge">English</div>
+      </div>
+
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-welcome">
+          <span class="chat-welcome-icon">🌿</span>
+          <h3>You're safe here</h3>
+          <p>Share what's troubling you, and I'll offer guidance from the timeless wisdom of Thirukkural. Take your time.</p>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="chat-input-wrapper">
+          <textarea
+            id="chat-input"
+            class="chat-input"
+            placeholder="Type what's on your mind..."
+            rows="1"
+            onkeydown="handleInputKey(event)"
+            oninput="autoResizeInput()"
+          ></textarea>
+          <button class="btn-send" id="btn-send" onclick="sendMessage()" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
